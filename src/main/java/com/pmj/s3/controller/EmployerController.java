@@ -1,9 +1,12 @@
 package com.pmj.s3.controller;
 
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.pmj.s3.model.Employer;
 import com.pmj.s3.service.S3Service;
 import com.pmj.s3.repository.EmployerRepository;
-import org.springframework.core.io.Resource;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -17,6 +20,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/employers")
+@Log4j2
 public class EmployerController {
 
     private final S3Service s3Service;
@@ -27,7 +31,7 @@ public class EmployerController {
         this.employerRepository = employerRepository;
     }
 
-    @PostMapping(value = "/create")
+    @PostMapping("/create")
     public ResponseEntity<Employer> createEmployer(
             @RequestParam("file") MultipartFile file,
             @ModelAttribute Employer employer
@@ -38,19 +42,29 @@ public class EmployerController {
         return new ResponseEntity<>(savedEmployer, HttpStatus.CREATED);
     }
 
-    @GetMapping(value = "/all")
+    @GetMapping("/all")
     public ResponseEntity<List<Employer>> getAllEmployers() {
         List<Employer> employers = employerRepository.findAll();
         return new ResponseEntity<>(employers, HttpStatus.OK);
     }
 
-    @GetMapping("/{id}/photoUrl")
-    public ResponseEntity<String> getEmployerPhotoUrl(@PathVariable Long id) {
+    @GetMapping(value = "/{id}/image", produces = MediaType.IMAGE_JPEG_VALUE)
+    public ResponseEntity<InputStreamResource> getEmployerImage(@PathVariable Long id) {
         Employer employer = employerRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Employer not found"));
 
         String imageUrl = employer.getImageUrl();
+        log.info("Image URL to retrieve: " + imageUrl);
 
-        return new ResponseEntity<>(imageUrl, HttpStatus.OK);
+        // Extract the key from the imageUrl
+        String keyName = imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
+        S3Object s3Object = s3Service.getFile(keyName);
+        S3ObjectInputStream objectInputStream = s3Object.getObjectContent();
+        InputStreamResource inputStreamResource = new InputStreamResource(objectInputStream);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_JPEG)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + keyName + "\"")
+                .body(inputStreamResource);
     }
 }

@@ -14,7 +14,7 @@ import java.io.IOException;
 @Log4j2
 public class S3Service {
 
-    private AmazonS3 s3client;
+    private final AmazonS3 s3client;
 
     @Value("${aws.s3.bucket}")
     private String bucketName;
@@ -24,12 +24,15 @@ public class S3Service {
     }
 
     public String uploadFile(String keyName, MultipartFile file) throws IOException {
+        log.info("Uploading file with key: " + keyName);
         s3client.putObject(bucketName, keyName, file.getInputStream(), null);
         String fileUrl = String.format("https://%s.s3.%s.amazonaws.com/%s", bucketName, Regions.US_EAST_1.getName(), keyName);
-        log.info("File uploaded to : " + fileUrl);
+        log.info("File uploaded to: " + fileUrl);
         return fileUrl;
     }
+
     public S3Object getFile(String keyName) {
+        log.info("Retrieving file with key: " + keyName);
         return s3client.getObject(bucketName, keyName);
     }
 }
