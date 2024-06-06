@@ -1,4 +1,4 @@
-package com.pmj.s3.config;
+package com.pmj.s3.controller;
 
 import com.pmj.s3.service.S3Service;
 import org.springframework.core.io.InputStreamResource;
