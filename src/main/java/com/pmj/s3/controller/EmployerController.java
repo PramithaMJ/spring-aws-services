@@ -22,7 +22,7 @@ public class EmployerController {
         this.employerRepository = employerRepository;
     }
 
-    @PostMapping
+    @PostMapping(value = "/create")
     public ResponseEntity<Employer> createEmployer(
             @RequestParam("file") MultipartFile file,
             @ModelAttribute Employer employer

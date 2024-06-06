@@ -25,7 +25,7 @@ public class S3Service {
 
     public String uploadFile(String keyName, MultipartFile file) throws IOException {
         s3client.putObject(bucketName, keyName, file.getInputStream(), null);
-        String fileUrl = String.format("https://%s.s3.%s.amazonaws.com/%s", bucketName, Regions.EU_CENTRAL_1.getName(), keyName);
+        String fileUrl = String.format("https://%s.s3.%s.amazonaws.com/%s", bucketName, Regions.US_EAST_1.getName(), keyName);
         log.info("File uploaded to : " + fileUrl);
         return fileUrl;
     }

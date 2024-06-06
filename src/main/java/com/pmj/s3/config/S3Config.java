@@ -24,7 +24,7 @@ public class S3Config {
         BasicAWSCredentials awsCreds = new BasicAWSCredentials(awsAccessKey, awsSecretKey);
         var awsS3Config = AmazonS3ClientBuilder.standard()
                 .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-                .withRegion(Regions.EU_CENTRAL_1) // This field if not exist throws an exception
+                .withRegion(Regions.US_EAST_1) // This field if not exist throws an exception
                 .build();
 
         return awsS3Config;
